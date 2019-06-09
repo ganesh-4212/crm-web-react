@@ -1,1 +1,9 @@
-// Here you can add other styles
+//react-datepicker style override start
+.react-datepicker__input-container{
+  display: block !important;
+}
+
+.react-datepicker-wrapper{
+  display: block !important;
+}
+//react-datepicker style override end

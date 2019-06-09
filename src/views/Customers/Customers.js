@@ -11,7 +11,7 @@ import {
   Table,
   Button
 } from "reactstrap";
-import CustomerForm from "./CustomerForm";
+import CustomerForm from "../CustomerForm";
 
 function CustomerListItem(props) {
   const { customer, onEdit } = props;
@@ -45,11 +45,18 @@ class Customers extends Component {
       selectedCustomerId: null
     };
     this.handleEditCustomer = this.handleEditCustomer.bind(this);
+    this.hideEditCustomerForm = this.hideEditCustomerForm.bind(this);
   }
 
   handleEditCustomer(id) {
     this.setState({
       selectedCustomerId: id
+    });
+  }
+
+  hideEditCustomerForm(){
+    this.setState({
+      selectedCustomerId: null
     });
   }
   render() {
@@ -63,6 +70,7 @@ class Customers extends Component {
               <CardHeader>
                 <i className="fa fa-users" />
                 Customers
+                <Button color="primary" className="float-right" title="Add Customer Details"><i className="fa fa-user-plus" /></Button>
               </CardHeader>
               <CardBody>
                 <Table responsive striped>
@@ -85,7 +93,7 @@ class Customers extends Component {
                     ))}
                   </tbody>
                 </Table>
-                <CustomerForm isOpen={selectedCustomerId ? true : false} />
+                <CustomerForm isOpen={selectedCustomerId ? true : false} customerId={selectedCustomerId} onCancel={this.hideEditCustomerForm}/>
                 <Pagination>
                   <PaginationItem disabled>
                     <PaginationLink previous tag="button">
