@@ -1,12 +1,12 @@
 import React from "react";
 import gql from "graphql-tag";
-import { Query } from "react-apollo";
 import Customers from "./Customers";
+import { useGetCustomersQuery } from "../../generated/graphql";
 
 const GET_CUSTOMERS = gql`
-  {
+  query getCustomers{
     customers {
-      id:_id
+      id
       name
       phone
       email
@@ -15,13 +15,12 @@ const GET_CUSTOMERS = gql`
   }
 `;
 
-export default () => (
-  <Query query={GET_CUSTOMERS}>
-    {({ loading, error, data }) => {
-      if (loading) return "Loading...";
-      if (error) return `Error! ${error.message}`;
+export default () => {
+  const {loading, error, data }  = useGetCustomersQuery()
 
-      return <Customers customers={data.customers}/>;
-    }}
-  </Query>
-);
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error :(</p>;
+    const customers = (data && data.customers)?data.customers:[]
+  return <Customers customers={customers}/>;
+}
+

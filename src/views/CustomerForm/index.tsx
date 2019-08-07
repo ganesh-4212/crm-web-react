@@ -1,13 +1,20 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import gql from "graphql-tag";
-import { Query, Mutation } from "react-apollo";
 import CustomerForm from "./CustomerForm";
+import { useQuery } from "@apollo/react-hooks";
+import {
+  useCreateCustomerMutation,
+  useGetCustomerByIdQuery,
+  GetCustomerByIdQueryResult,
+  GetCustomerByIdQuery,
+  Customer
+} from "../../generated/graphql";
 
 const CREATE_CUSTOMER = gql`
   mutation createCustomer($customer: CustomerInput!) {
-    customer(customer: $customer) {
-      id: _id
+    createCustomer(customer: $customer) {
+      id
       name
       phone
       email
@@ -17,9 +24,9 @@ const CREATE_CUSTOMER = gql`
 `;
 
 const GET_CUSTOMER = gql`
-  query getCustomerById($id: ID!) {
-    customer(id: $id) {
-      id: _id
+  query getCustomerById($id: String!) {
+    customer(customerId: $id) {
+      id
       name
       phone
       email
@@ -27,53 +34,77 @@ const GET_CUSTOMER = gql`
     }
   }
 `;
+const AddOrUpdateCustomer = ({
+  customer,
+  isOpen,
+  isEdit,
+  onCancel
+}: {
+  customer?: Customer;
+  isOpen: boolean;
+  isEdit: boolean;
+  onCancel: any;
+}) => {
+  const [createCustomer, { error, loading }] = useCreateCustomerMutation();
+  return (
+    <CustomerForm
+      customer={customer}
+      isOpen={isOpen}
+      isEdit={isEdit}
+      onSaveCustomer={createCustomer}
+      onCancel={onCancel}
+      loading={loading}
+      error={error}
+    />
+  );
+};
+const UpdateCutsomer = ({
+  onCancel,
+  isOpen,
+  customerId
+}: {
+  onCancel: any;
+  isOpen: boolean;
+  customerId: string;
+}) => {
+  const { loading, error, data } = useGetCustomerByIdQuery({
+    variables: { id: customerId }
+  });
 
-class CustomerFormGraph extends Component {
-  constructor(props) {
-    super(props);
-    this.renderMutationCustomForm = this.renderMutationCustomForm.bind(this);
-  }
-  static propTypes = {
-    onCancel: PropTypes.func.isRequired,
-    isOpen: PropTypes.bool.isRequired
-  };
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error :(</p>;
 
-  static defaultProps = {};
+  const customer =
+    data && data.customer ? (data.customer as Customer) : undefined;
+  return (
+    <AddOrUpdateCustomer
+      customer={customer}
+      isEdit={true}
+      isOpen={isOpen}
+      onCancel={onCancel}
+    />
+  );
+};
 
-  renderMutationCustomForm(customer, isEdit) {
-    const { onCancel, isOpen } = this.props;
+export default ({
+  onCancel,
+  isOpen,
+  customerId
+}: {
+  onCancel: any;
+  isOpen: boolean;
+  customerId?: string;
+}) => {
+  if (customerId) {
     return (
-      <Mutation mutation={CREATE_CUSTOMER}>
-        {(createCustomer, { called, error, loading }) => (
-          <CustomerForm
-            customer={customer}
-            isOpen={isOpen}
-            isEdit={isEdit}
-            onSaveCustomer={createCustomer}
-            onCancel={onCancel}
-            loading={loading}
-            error={error}
-          />
-        )}
-      </Mutation>
+      <UpdateCutsomer
+        customerId={customerId}
+        isOpen={isOpen}
+        onCancel={onCancel}
+      />
     );
   }
-  render() {
-    const { customerId } = this.props;
-    if (customerId) {
-      return (
-        <Query query={GET_CUSTOMER} variables={{id:customerId}}>
-          {({ loading, error, data }) => {
-            if (loading) return "Loading...";
-            if (error) return `Error! ${error.message}`;
-
-            return this.renderMutationCustomForm(data.customer, true);
-          }}
-        </Query>
-      );
-    }
-    return this.renderMutationCustomForm(null, false);
-  }
-}
-
-export default CustomerFormGraph;
+  return (
+    <AddOrUpdateCustomer isEdit={false} isOpen={isOpen} onCancel={onCancel} />
+  );
+};

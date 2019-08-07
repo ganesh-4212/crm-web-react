@@ -3,11 +3,11 @@ import "react-app-polyfill/ie11"; // For IE 11 support
 import "./polyfill";
 import React from "react";
 import ReactDOM from "react-dom";
-import { ApolloProvider } from "react-apollo";
 import "./index.css";
 import App from "./App";
 import * as serviceWorker from "./serviceWorker";
 import ApolloClient from "apollo-boost";
+import { ApolloProvider } from "@apollo/react-hooks";
 
 const client = new ApolloClient({
   uri: "http://localhost:4000/"
